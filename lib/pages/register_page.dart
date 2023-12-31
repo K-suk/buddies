@@ -1,5 +1,6 @@
 import 'package:buddies_proto/components/my_button.dart';
 import 'package:buddies_proto/components/my_textfield.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -23,20 +24,30 @@ class _RegisterPageState extends State<RegisterPage> {
   void signUserUp() async {
     try {
       if (emailController.text.contains("@")){
-        if (emailController.text.split("@")[1] == "student.ubc.ca"){
+        //if (emailController.text.split("@")[1] == "student.ubc.ca"){
           if (passwordController.text == confirmPasswordController.text){
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
               email: emailController.text,
               password: passwordController.text,
             );
+            FirebaseFirestore.instance.collection("Users").doc(userCredential.user!.email).set({
+              'username': emailController.text.split('@')[0],
+              'bio': 'Empty bio...',
+              'preference': '',
+              'sex': '',
+              'matching ppl': [],
+              'instagram': '',
+              'facebook': '',
+              'phone': '000-000-0000',
+            });
             try {
               await FirebaseAuth.instance.currentUser!.sendEmailVerification();
             } on FirebaseException catch (e) {
               showErrorMessage(e.code);
             }
-          } else {
-            showErrorMessage("Password don't match!");
-          }
+          //} else {
+            //showErrorMessage("Password don't match!");
+          //}
         } else {
           showErrorMessage("Sorry, but please go back to Saimon Fraser University L");
         }

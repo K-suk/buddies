@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:buddies_proto/pages/home_page.dart';
+import 'package:buddies_proto/pages/profile_add_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +16,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   bool isEmailVerified = false;
   bool canResendEmail = false;
   Timer? timer;
+  String? sex;
   @override
   void initState() {
     super.initState();
@@ -57,10 +60,29 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
 
   Future checkEmailVerified() async {
     await FirebaseAuth.instance.currentUser!.reload();
-    setState(() {
-      isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
-    });
-    if (isEmailVerified) timer?.cancel();
+    final currentUser = FirebaseAuth.instance.currentUser!;
+    if (currentUser.emailVerified) {
+      // Fetch Firestore data asynchronously
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance.collection("Users").doc(currentUser.email).get();
+      Map<String, dynamic>? userData = userSnapshot.data() as Map<String, dynamic>?;
+      setState(() {
+        isEmailVerified = currentUser.emailVerified;
+        // Use userData here as needed, or pass it to another function/state
+        sex = userData!['sex'];
+      });
+      if (sex!.isEmpty){
+        timer?.cancel();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => ProfileAdd()), // Redirect to ProfileAddPage
+        );
+      } else {
+        timer?.cancel();
+      }
+    } else {
+      setState(() {
+        isEmailVerified = currentUser.emailVerified;
+      });
+    }
   }
 
   @override

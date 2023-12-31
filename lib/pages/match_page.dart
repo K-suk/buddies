@@ -4,8 +4,8 @@ import 'package:buddies_proto/pages/profile_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatelessWidget {
-  HomePage({super.key});
+class MatchPage extends StatelessWidget {
+  MatchPage({super.key});
   final currentUser = FirebaseAuth.instance.currentUser!;
   void signUserOut(BuildContext context) {
     FirebaseAuth.instance.signOut();
@@ -25,7 +25,7 @@ class HomePage extends StatelessWidget {
         onProfileTap: () => goToProfilePage(context),
         onSignOut: () => signUserOut(context),
       ),
-      body: Center(child: Text("Logged In AS:" + currentUser.email!)),
+      body: Center(child: Text("Match")),
     );
   }
 }
