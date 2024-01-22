@@ -1,5 +1,4 @@
 import 'package:buddies_proto/pages/home_or_match_page.dart';
-import 'package:buddies_proto/pages/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

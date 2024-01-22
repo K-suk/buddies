@@ -1,7 +1,6 @@
 import 'package:buddies_proto/components/my_button.dart';
 import 'package:buddies_proto/components/my_textfield.dart';
 import 'package:buddies_proto/pages/home_or_match_page.dart';
-import 'package:buddies_proto/pages/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
