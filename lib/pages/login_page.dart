@@ -33,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text,
       );
       Navigator.pop(context);
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(),));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => HomeOrMatchPage(),));
     } on FirebaseAuthException catch (e) {
 
       Navigator.pop(context);

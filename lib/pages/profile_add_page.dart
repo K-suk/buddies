@@ -137,7 +137,7 @@ class _ProfileAddState extends State<ProfileAdd> {
                                   'preference': preferenceEditingController.text,
                                 });
                                 Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(builder: (context) => HomePage()),
+                                  MaterialPageRoute(builder: (context) => HomeOrMatchPage()),
                                   (Route<dynamic> route) => false,
                                 );
                               }

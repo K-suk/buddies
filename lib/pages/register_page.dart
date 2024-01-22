@@ -39,6 +39,11 @@ class _RegisterPageState extends State<RegisterPage> {
               'instagram': '',
               'facebook': '',
               'phone': '000-000-0000',
+              'cur_matching': '',
+              'wait?': false,
+              'done?': true,
+              'review': 0,
+              'followed': false,
             });
             try {
               await FirebaseAuth.instance.currentUser!.sendEmailVerification();
