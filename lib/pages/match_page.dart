@@ -27,12 +27,17 @@ class MatchPage extends StatelessWidget {
       FirebaseFirestore.instance.collection('Users').doc(currentUser.email).update({
         'done?': true,
         'cur_matching': "",
-        'followed': false,
+      });
+      FirebaseFirestore.instance.collection('Users').doc(match).update({
+        'cur_matching': "",
+        'followed': false
       });
     } else {
       FirebaseFirestore.instance.collection('Users').doc(currentUser.email).update({
         'done?': true,
-        'followed': false,
+      });
+      FirebaseFirestore.instance.collection('Users').doc(match).update({
+        'followed': false
       });
     }
   }

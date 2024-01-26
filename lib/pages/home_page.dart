@@ -7,33 +7,43 @@ import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
-  final currentUser = FirebaseAuth.instance.currentUser!;
 
-  void signUserOut(BuildContext context) {
-    FirebaseAuth.instance.signOut();
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginOrRegisterPage()));
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> signUserOut(BuildContext context) async {
+    await _auth.signOut();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginOrRegisterPage()),
+      (Route<dynamic> route) => false,
+    );
   }
+
   void goToProfilePage(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage(),));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfilePage()),
+    );
   }
-  Future<void> editCondition() async{
-    CollectionReference users = FirebaseFirestore.instance.collection('Users');
-    final user = await users.doc(currentUser.email!).get();
-    CollectionReference counts = FirebaseFirestore.instance.collection('Male_match_stack');
-    final counter = await counts.doc('Counter').get();
-    if (user.get('sex')=='male'){
-      FirebaseFirestore.instance.collection('Male_match_stack').doc(counter.get('num').toString()).update({
-        'stack': FieldValue.arrayUnion([currentUser.email!])
-      });
-    }else{
-      FirebaseFirestore.instance.collection('Female_match_stack').doc(counter.get('num').toString()).update({
-        'stack': FieldValue.arrayUnion([currentUser.email!])
-      });
+
+  Future<void> editCondition() async {
+    User? currentUser = _auth.currentUser;
+    if (currentUser == null || currentUser.email == null) {
+      return;
     }
-    FirebaseFirestore.instance.collection('Users').doc(currentUser.email!).update({'wait?': true});
+    DocumentSnapshot userDoc = await _firestore.collection('Users').doc(currentUser.email).get();
+    DocumentSnapshot counterDoc = await _firestore.collection('Male_match_stack').doc('Counter').get();
+
+    String gender = userDoc['sex'];
+    String collectionName = gender == 'male' ? 'Male_match_stack' : 'Female_match_stack';
+
+    await _firestore.collection(collectionName).doc(counterDoc['num'].toString()).update({
+      'stack': FieldValue.arrayUnion([currentUser.email])
+    });
+    await _firestore.collection('Users').doc(currentUser.email).update({'wait?': true});
   }
+
   Future<void> makeMatch() async{
     CollectionReference counts = FirebaseFirestore.instance.collection('Male_match_stack');
     final counter = await counts.doc('Counter').get();
@@ -105,60 +115,111 @@ class HomePage extends StatelessWidget {
     FirebaseFirestore.instance.collection('Male_match_stack').doc(cur_cnt.toString()).delete();
     FirebaseFirestore.instance.collection('Female_match_stack').doc(cur_cnt.toString()).delete();
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    User? currentUser = _auth.currentUser;
+    if (currentUser == null || currentUser.email == null) {
+      return const Scaffold(
+        body: Center(child: Text("No user logged in")),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(),
       drawer: MyDrawer(
         onProfileTap: () => goToProfilePage(context),
         onSignOut: () => signUserOut(context),
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance.collection("Users").doc(currentUser.email!).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData){
-            final userData = snapshot.data!.data() as Map<String, dynamic>;
-            final flag = userData['wait?'];
-            if (flag){
-              return Column(
-                children: [
-                  Center(child: Text("Please wait for your buddy is found"),),
-                  Center(child: 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: ElevatedButton( 
-                        onPressed: () => makeMatch(), 
-                        child: const Text('Matcing'),
-                      )
-                    )
-                  ),
-                ],
-              );
-            } else {
-              return Column(
-                children: [
-                  Center(child: Text("Let's find your drinking buddies!")),
-                  Center(child: 
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: ElevatedButton( 
-                        onPressed: () => editCondition(), 
-                        child: const Text('Find Buddies'),
-                      )
-                    )
-                  ),
-                ],
-              );
-            }
-          }
-          else if (snapshot.hasError) {
-            return Center(child: Text('Error${snapshot.error}'),);
-          } else {
-            return const Center(child: CircularProgressIndicator(),);
-          }
-        },
-      )
+      body: UserHomePageStreamBuilder(
+        email: currentUser.email!,
+        makeMatch: makeMatch,
+        editCondition: editCondition,
+      ),
+    );
+  }
+}
+
+class UserHomePageStreamBuilder extends StatelessWidget {
+  final String email;
+  final Future<void> Function() makeMatch;
+  final Future<void> Function() editCondition;
+
+  const UserHomePageStreamBuilder({
+    Key? key,
+    required this.email,
+    required this.makeMatch,
+    required this.editCondition,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection("Users").doc(email).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: Text('No data found'));
+        }
+
+        final userData = snapshot.data!.data() as Map<String, dynamic>;
+        final bool isWaiting = userData['wait?'] ?? false;
+
+        return isWaiting 
+          ? WaitingForMatchWidget(makeMatch: makeMatch)
+          : ReadyToMatchWidget(editCondition: editCondition);
+      },
+    );
+  }
+}
+
+class WaitingForMatchWidget extends StatelessWidget {
+  final Future<void> Function() makeMatch;
+
+  const WaitingForMatchWidget({Key? key, required this.makeMatch}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("Please wait for your buddy to be found"),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: ElevatedButton(
+            onPressed: () => makeMatch(), // Implement makeMatch
+            child: const Text('Matching'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ReadyToMatchWidget extends StatelessWidget {
+  final Future<void> Function() editCondition;
+
+  const ReadyToMatchWidget({Key? key, required this.editCondition}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text("Let's find your drinking buddies!"),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: ElevatedButton(
+            onPressed: () => editCondition(), // Implement editCondition
+            child: const Text('Find Buddies'),
+          ),
+        ),
+      ],
     );
   }
 }
