@@ -1,5 +1,6 @@
 import 'package:buddies_proto/firebase_options.dart';
-import 'package:buddies_proto/pages/auth_page.dart';
+import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/auth_page.dart';
+import 'package:buddies_proto/utils/theme/theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +18,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: TAppTheme.lightTheme,
+      darkTheme: TAppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       home: AuthPage(),
     );
