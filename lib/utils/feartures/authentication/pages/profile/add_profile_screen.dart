@@ -8,18 +8,24 @@ import 'package:buddies_proto/utils/constants/colors.dart';
 import 'package:buddies_proto/utils/constants/image_strings.dart';
 import 'package:buddies_proto/utils/constants/sizes.dart';
 
-class ProfileAddPage extends StatelessWidget {
+class ProfileAddPage extends StatefulWidget {
   const ProfileAddPage({super.key});
 
+  @override
+  State<ProfileAddPage> createState() => _ProfileAddPageState();
+}
+
+class _ProfileAddPageState extends State<ProfileAddPage> {
+  var sexEditingController = "";
   @override
   Widget build(BuildContext context) {
     final User? currentUser = FirebaseAuth.instance.currentUser;
     final usersCollection = FirebaseFirestore.instance.collection("Users");
-    final sexEditingController = TextEditingController();
     final preferenceEditingController = TextEditingController();
     final igEditingController = TextEditingController();
     final fbEditingController = TextEditingController();
     final pnEditingController = TextEditingController();
+    var size = MediaQuery.of(context).size.width;
     void showErrorMessage(String message) {
       showDialog(
         context: context,
@@ -38,7 +44,7 @@ class ProfileAddPage extends StatelessWidget {
     }
     Future<void> updateProfile() async {
       if (currentUser?.email == null) return;
-      if (sexEditingController.text.isEmpty) {
+      if (sexEditingController == "") {
         showErrorMessage("Your Sex can't be blank");
         return;
       }
@@ -48,7 +54,7 @@ class ProfileAddPage extends StatelessWidget {
       }
 
       await usersCollection.doc(currentUser!.email).update({
-        'sex': sexEditingController.text,
+        'sex': sexEditingController,
         'preference': preferenceEditingController.text,
         'instagram': igEditingController.text.isEmpty ? 'Empty...' : igEditingController.text,
         'facebook': fbEditingController.text.isEmpty ? 'Empty...' : fbEditingController.text,
@@ -62,10 +68,6 @@ class ProfileAddPage extends StatelessWidget {
     }
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(),));
-              }, icon: const Icon(LineAwesomeIcons.angle_left)),
           title: Text(
             "Edit Profile",
             style: Theme.of(context).textTheme.headlineMedium,
@@ -109,53 +111,74 @@ class ProfileAddPage extends StatelessWidget {
                 const SizedBox(height: 50,),
                 Form(child: Column(
                   children: [
-                    TextFormField(
-                      controller: sexEditingController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                        prefixIcon: Icon(Icons.person_outline_outlined),
-                        labelText: "Gender",
-                        hintText: "Your Gender",
+                    Container(
+                      width: size*0.8,
+                      child: DropdownButtonFormField<String>(
+                        value: sexEditingController.isEmpty ? null : sexEditingController,
+                        items: <String>['male', 'female'].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            sexEditingController = newValue!; // 必要に応じて更新
+                          });
+                        },
+                        hint: Text("Select Gender"), // Provide a hint for null value if appropriate
                       ),
                     ),
                     const SizedBox(height: TSizes.formHeight,),
-                    TextFormField(
-                      controller: preferenceEditingController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                        prefixIcon: Icon(Icons.email_outlined),
-                        labelText: "Hobby",
-                        hintText: "Your hobby",
+                    Container(
+                      width: size*0.8,
+                      child: TextFormField(
+                        controller: preferenceEditingController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                          prefixIcon: Icon(Icons.email_outlined),
+                          labelText: "Hobby",
+                          hintText: "Your hobby",
+                        ),
                       ),
                     ),
                     const SizedBox(height: TSizes.formHeight,),
-                    TextFormField(
-                      controller: igEditingController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                        prefixIcon: Icon(Icons.key_outlined),
-                        labelText: "IG ID",
-                        hintText: "Your Instagram ID",
+                    Container(
+                      width: size*0.8,
+                      child: TextFormField(
+                        controller: igEditingController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                          prefixIcon: Icon(Icons.key_outlined),
+                          labelText: "IG ID",
+                          hintText: "Your Instagram ID",
+                        ),
                       ),
                     ),
                     const SizedBox(height: TSizes.formHeight,),
-                    TextFormField(
-                      controller: fbEditingController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                        prefixIcon: Icon(Icons.key_outlined),
-                        labelText: "FB ID",
-                        hintText: "Your Facebook ID",
+                    Container(
+                      width: size*0.8,
+                      child: TextFormField(
+                        controller: fbEditingController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                          prefixIcon: Icon(Icons.key_outlined),
+                          labelText: "FB ID",
+                          hintText: "Your Facebook ID",
+                        ),
                       ),
                     ),
                     const SizedBox(height: TSizes.formHeight,),
-                    TextFormField(
-                      controller: pnEditingController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                        prefixIcon: Icon(Icons.key_outlined),
-                        labelText: "Phone Number",
-                        hintText: "Your Phone Number",
+                    Container(
+                      width: size*0.8,
+                      child: TextFormField(
+                        controller: pnEditingController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                          prefixIcon: Icon(Icons.key_outlined),
+                          labelText: "Phone Number",
+                          hintText: "Your Phone Number",
+                        ),
                       ),
                     ),
                   ],

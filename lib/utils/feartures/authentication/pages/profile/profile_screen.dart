@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/home_or_match_page.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/profile/update_profile_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:buddies_proto/utils/constants/colors.dart';
 import 'package:buddies_proto/utils/constants/image_strings.dart';
@@ -42,12 +45,29 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       Stack(
                         children: [
+                          userData['imageLink'] != "" ?
                           SizedBox(
                             width: 120,
                             height: 120,
                             child: ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
-                                child: const Image(
+                                child: Image.network(
+                                  userData['imageLink'],
+                                  errorBuilder: (BuildContext context, o, s) {
+                                    return 
+                                      Image(
+                                        image: AssetImage(TImages.google),
+                                      );
+                                  },
+                                ),
+                            )
+                          ) : 
+                          SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Image(
                                   image: AssetImage(TImages.google),
                                 )),
                           ),
@@ -104,14 +124,86 @@ class ProfilePage extends StatelessWidget {
                       const SizedBox(
                         height: 10,
                       ),
-                      ProfileMenuWidget(title: userData["sex"], icon: LineAwesomeIcons.cog, onPress: () {},),
-                      ProfileMenuWidget(title: userData["preference"], icon: LineAwesomeIcons.wallet, onPress: () {},),
-                      ProfileMenuWidget(title: userData["bio"], icon: LineAwesomeIcons.wallet, onPress: () {},),
+                      Stack(children: [
+                        ProfileMenuWidget(title: userData["sex"], icon: LineAwesomeIcons.genderless, onPress: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileUpdatePage(),));
+                        },),
+                        Positioned(
+                          top: 0,
+                          left: 65,
+                          child: Text(
+                            "Gender",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                          )
+                        )
+                      ]),
+                      Stack(children: [
+                        ProfileMenuWidget(title: userData["preference"], icon: LineAwesomeIcons.beer, onPress: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileUpdatePage(),));
+                        },),
+                        Positioned(
+                          top: 0,
+                          left: 65,
+                          child: Text(
+                            "Hobby",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                          )
+                        )
+                      ]),
+                      Stack(children: [
+                        ProfileMenuWidget(title: userData["bio"], icon: LineAwesomeIcons.file, onPress: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileUpdatePage(),));
+                        },),
+                        Positioned(
+                          top: 0,
+                          left: 65,
+                          child: Text(
+                            "Bio",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                          )
+                        )
+                      ]),
                       const Divider(color: Colors.grey,),
                       const SizedBox(height: 10,),
-                      ProfileMenuWidget(title: userData["instagram"], icon: LineAwesomeIcons.user_check, onPress: () {},),
-                      ProfileMenuWidget(title: userData["facebook"], icon: LineAwesomeIcons.info, onPress: () {},),
-                      ProfileMenuWidget(title: userData["phone"], icon: LineAwesomeIcons.alternate_sign_out, onPress: () {},),
+                      Stack(children: [
+                        ProfileMenuWidget(title: userData["instagram"], icon: LineAwesomeIcons.instagram, onPress: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileUpdatePage(),));
+                        },),
+                        Positioned(
+                          top: 0,
+                          left: 65,
+                          child: Text(
+                            "IG ID",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                          )
+                        )
+                      ]),
+                      Stack(children: [
+                        ProfileMenuWidget(title: userData["facebook"], icon: LineAwesomeIcons.facebook, onPress: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileUpdatePage(),));
+                        },),
+                        Positioned(
+                          top: 0,
+                          left: 65,
+                          child: Text(
+                            "FB ID",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                          )
+                        )
+                      ]),
+                      Stack(children: [
+                        ProfileMenuWidget(title: userData["phone"], icon: LineAwesomeIcons.phone, onPress: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileUpdatePage(),));
+                        },),
+                        Positioned(
+                          top: 0,
+                          left: 65,
+                          child: Text(
+                            "Phone Number",
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12),
+                          )
+                        )
+                      ]),
                     ],
                   ),
                 ),
@@ -158,10 +250,7 @@ class ProfileMenuWidget extends StatelessWidget {
           color: TColors.accent,
         ),
       ),
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.bodyLarge?.apply(color: textColor)
-      ),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge?.apply(color: textColor)),
       trailing: endIcon? Container(
         width: 30,
         height: 30,

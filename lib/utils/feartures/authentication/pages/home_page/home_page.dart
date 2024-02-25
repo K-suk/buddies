@@ -1,9 +1,12 @@
 import 'package:buddies_proto/components/drawer.dart';
+import 'package:buddies_proto/utils/constants/image_strings.dart';
+import 'package:buddies_proto/utils/constants/sizes.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/login_or_register_page.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/profile/profile_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -208,18 +211,37 @@ class ReadyToMatchWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text("Let's find your drinking buddies!"),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: ElevatedButton(
-            onPressed: () => editCondition(), // Implement editCondition
-            child: const Text('Find Buddies'),
+    var size = MediaQuery.of(context).size.height;
+    return SafeArea(
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(TSizes.defaultSpace),
+            child: Column(
+              children: [
+                Image(image: const AssetImage(TImages.onBoardingImage2), height: size * 0.5,),
+                Text("Let's find your buddies!", style: Theme.of(context).textTheme.headlineLarge,),
+                Text("To find your buddy, please click the button below! You'll connect to your buddy soon!", textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyLarge,),
+                const SizedBox(height: TSizes.formHeight,),
+                const SizedBox(height: 24,),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size.fromHeight(50),
+                  ),
+                  icon: Icon(LineAwesomeIcons.beer, size: 32),
+                  label: Text(
+                    'Find new buddy',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  onPressed: () {
+                    editCondition();
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        )
+      ),
     );
   }
 }
