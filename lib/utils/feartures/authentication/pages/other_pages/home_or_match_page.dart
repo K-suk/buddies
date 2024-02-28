@@ -1,5 +1,6 @@
 import 'package:buddies_proto/utils/feartures/authentication/pages/home_page/home_page.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/match_page/match_page.dart';
+import 'package:buddies_proto/utils/feartures/authentication/pages/profile/add_profile_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,10 @@ class UserStreamBuilder extends StatelessWidget {
 
         final userData = snapshot.data!.data() as Map<String, dynamic>;
         final match = userData['cur_matching'];
-        if (match.isEmpty) {
+        final sex = userData['sex'];
+        if (sex.isEmpty) {
+          return ProfileAddPage();
+        } else if (match.isEmpty) {
           return HomePage();
         } else {
           return MatchPage();

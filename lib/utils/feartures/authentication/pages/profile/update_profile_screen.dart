@@ -118,8 +118,6 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
               padding: const EdgeInsets.all(TSizes.defaultSpace),
                 child: Column(
                   children: [
-                    Stack(
-                      children: [
                         GestureDetector(
                           onTap: () {
                             selectImage();
@@ -176,8 +174,6 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                             ],
                           ),
                         ),
-                      ],
-                    ),
                     const SizedBox(height: 50,),
                     Form(child: Column(
                       children: [

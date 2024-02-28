@@ -1,8 +1,15 @@
+import 'dart:typed_data';
+
+import 'package:buddies_proto/resources/add_data.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/home_or_match_page.dart';
+import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/random_string.dart';
+import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/utils.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/profile/profile_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:buddies_proto/utils/constants/colors.dart';
 import 'package:buddies_proto/utils/constants/image_strings.dart';
@@ -15,6 +22,7 @@ class ProfileAddPage extends StatefulWidget {
   State<ProfileAddPage> createState() => _ProfileAddPageState();
 }
 
+Uint8List? image;
 class _ProfileAddPageState extends State<ProfileAddPage> {
   var sexEditingController = "";
   @override
@@ -42,6 +50,19 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
         }
       );
     }
+    Future<String> uploadImageToStorage(String childName, Uint8List file) async {
+      Reference ref = storage.ref().child(childName).child(getRandomString(15));
+      UploadTask uploadTask = ref.putData(file);
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    }
+    void selectImage() async {
+      Uint8List img = await pickImage(ImageSource.gallery);
+      setState(() {
+        image = img;
+      });
+    }
     Future<void> updateProfile() async {
       if (currentUser?.email == null) return;
       if (sexEditingController == "") {
@@ -52,13 +73,14 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
         showErrorMessage("Your Hobby can't be blank");
         return;
       }
-
+      String imageUrl = await uploadImageToStorage('profileImage', image!);
       await usersCollection.doc(currentUser!.email).update({
         'sex': sexEditingController,
         'preference': preferenceEditingController.text,
         'instagram': igEditingController.text.isEmpty ? 'Empty...' : igEditingController.text,
         'facebook': fbEditingController.text.isEmpty ? 'Empty...' : fbEditingController.text,
         'phone': pnEditingController.text.isEmpty ? 'Empty...' : pnEditingController.text,
+        'imageLink': imageUrl,
       });
 
       Navigator.of(context).pushAndRemoveUntil(
@@ -67,138 +89,154 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(
-          title: Text(
-            "Edit Profile",
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.all(TSizes.defaultSpace),
-            child: Column(
-              children: [
-                Stack(
-                  children: [
-                    SizedBox(
-                      width: 120,
-                      height: 120,
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: Image(
-                            image: AssetImage(TImages.google),
-                          )),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 35,
-                        height: 35,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-                          color: TColors.primary,
-                        ),
-                        child: Icon(
-                          LineAwesomeIcons.camera,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(height: 50,),
-                Form(child: Column(
-                  children: [
-                    Container(
-                      width: size*0.8,
-                      child: DropdownButtonFormField<String>(
-                        value: sexEditingController.isEmpty ? null : sexEditingController,
-                        items: <String>['male', 'female'].map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            sexEditingController = newValue!; // 必要に応じて更新
-                          });
-                        },
-                        hint: Text("Select Gender"), // Provide a hint for null value if appropriate
-                      ),
-                    ),
-                    const SizedBox(height: TSizes.formHeight,),
-                    Container(
-                      width: size*0.8,
-                      child: TextFormField(
-                        controller: preferenceEditingController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                          prefixIcon: Icon(Icons.email_outlined),
-                          labelText: "Hobby",
-                          hintText: "Your hobby",
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: TSizes.formHeight,),
-                    Container(
-                      width: size*0.8,
-                      child: TextFormField(
-                        controller: igEditingController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                          prefixIcon: Icon(Icons.key_outlined),
-                          labelText: "IG ID",
-                          hintText: "Your Instagram ID",
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: TSizes.formHeight,),
-                    Container(
-                      width: size*0.8,
-                      child: TextFormField(
-                        controller: fbEditingController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                          prefixIcon: Icon(Icons.key_outlined),
-                          labelText: "FB ID",
-                          hintText: "Your Facebook ID",
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: TSizes.formHeight,),
-                    Container(
-                      width: size*0.8,
-                      child: TextFormField(
-                        controller: pnEditingController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
-                          prefixIcon: Icon(Icons.key_outlined),
-                          labelText: "Phone Number",
-                          hintText: "Your Phone Number",
-                        ),
-                      ),
-                    ),
-                  ],
-                ),),
-                const SizedBox(height: 30,),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      updateProfile();
+      // appBar: AppBar(
+      //     title: Text(
+      //       "Edit Profile",
+      //       style: Theme.of(context).textTheme.headlineMedium,
+      //     ),
+      // ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(TSizes.defaultSpace),
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      selectImage();
                     },
-                    child: Text("submit"),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: TColors.primary,
-                        side: BorderSide.none,
-                        shape: StadiumBorder()),
+                    child: Stack(
+                      children: [
+                        if (image != null) 
+                          SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: CircleAvatar(
+                              radius: 64,
+                              backgroundImage: MemoryImage(image!),
+                            ),
+                          )
+                        else
+                          SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(100),
+                              child: Image.asset(TImages.google),
+                            ),
+                          ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 35,
+                            height: 35,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              color: TColors.primary,
+                            ),
+                            child: Icon(
+                              LineAwesomeIcons.camera,
+                              size: 20,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ]
-            )
+                  const SizedBox(height: 50,),
+                  Form(child: Column(
+                    children: [
+                      Container(
+                        width: size*0.8,
+                        child: DropdownButtonFormField<String>(
+                          value: sexEditingController.isEmpty ? null : sexEditingController,
+                          items: <String>['male', 'female'].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              sexEditingController = newValue!; // 必要に応じて更新
+                            });
+                          },
+                          hint: Text("Select Gender"), // Provide a hint for null value if appropriate
+                        ),
+                      ),
+                      const SizedBox(height: TSizes.formHeight,),
+                      Container(
+                        width: size*0.8,
+                        child: TextFormField(
+                          controller: preferenceEditingController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                            prefixIcon: Icon(Icons.email_outlined),
+                            labelText: "Hobby",
+                            hintText: "Your hobby",
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: TSizes.formHeight,),
+                      Container(
+                        width: size*0.8,
+                        child: TextFormField(
+                          controller: igEditingController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                            prefixIcon: Icon(Icons.key_outlined),
+                            labelText: "IG ID",
+                            hintText: "Your Instagram ID",
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: TSizes.formHeight,),
+                      Container(
+                        width: size*0.8,
+                        child: TextFormField(
+                          controller: fbEditingController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                            prefixIcon: Icon(Icons.key_outlined),
+                            labelText: "FB ID",
+                            hintText: "Your Facebook ID",
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: TSizes.formHeight,),
+                      Container(
+                        width: size*0.8,
+                        child: TextFormField(
+                          controller: pnEditingController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(100)),
+                            prefixIcon: Icon(Icons.key_outlined),
+                            labelText: "Phone Number",
+                            hintText: "Your Phone Number",
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),),
+                  const SizedBox(height: 30,),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        updateProfile();
+                      },
+                      child: Text("submit"),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: TColors.primary,
+                          side: BorderSide.none,
+                          shape: StadiumBorder()),
+                    ),
+                  ),
+                ]
+              )
+          ),
         ),
       ),
     );

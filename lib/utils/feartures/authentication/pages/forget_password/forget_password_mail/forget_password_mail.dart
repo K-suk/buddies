@@ -1,3 +1,5 @@
+import 'package:buddies_proto/utils/feartures/authentication/pages/login/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:buddies_proto/utils/constants/image_strings.dart';
 import 'package:buddies_proto/utils/constants/sizes.dart';
@@ -6,9 +8,39 @@ import 'package:buddies_proto/utils/constants/text_strings.dart';
 class ForgetPasswordMailPage extends StatelessWidget {
   const ForgetPasswordMailPage({super.key});
 
+  Future resetPassword(String email, BuildContext context) async {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.deepPurple,
+          title: Center(
+            child: Column(
+              children: [
+                Text(
+                  "Password Reset Email sent",
+                  style: const TextStyle(color: Colors.white),
+                ),
+                ElevatedButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage(onTap: () {  },),));
+                  }, 
+                  child: Text("Login".toUpperCase())
+                )
+              ]
+            )
+          )
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size.height;
+    final emailController = TextEditingController();
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -24,6 +56,7 @@ class ForgetPasswordMailPage extends StatelessWidget {
                 Form(child: Column(
                   children: [
                     TextFormField(
+                      controller: emailController,
                       decoration: const InputDecoration(
                         label: Text(TTexts.email),
                         hintText: "Your UBC Student Email",
@@ -31,7 +64,9 @@ class ForgetPasswordMailPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20.0,),
-                    SizedBox(width: double.infinity , child: ElevatedButton(onPressed: () {}, child: const Text("Next"))),
+                    SizedBox(width: double.infinity , child: ElevatedButton(onPressed: () {
+                      resetPassword(emailController.text.trim(), context);
+                    }, child: const Text("Next"))),
                   ],
                 ))
               ],

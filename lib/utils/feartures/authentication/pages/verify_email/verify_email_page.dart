@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:buddies_proto/utils/feartures/authentication/pages/home_page/home_page.dart';
 import 'package:buddies_proto/utils/constants/image_strings.dart';
 import 'package:buddies_proto/utils/constants/sizes.dart';
+import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/home_or_match_page.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/profile/add_profile_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -64,21 +65,18 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     await FirebaseAuth.instance.currentUser!.reload();
     final currentUser = FirebaseAuth.instance.currentUser!;
     if (currentUser.emailVerified) {
-      // Fetch Firestore data asynchronously
       DocumentSnapshot userSnapshot = await FirebaseFirestore.instance.collection("Users").doc(currentUser.email).get();
       Map<String, dynamic>? userData = userSnapshot.data() as Map<String, dynamic>?;
-      setState(() {
-        isEmailVerified = currentUser.emailVerified;
-        // Use userData here as needed, or pass it to another function/state
-        sex = userData!['sex'];
-      });
-      if (sex!.isEmpty){
-        timer?.cancel();
+      // Fetch Firestore data asynchronously
+      // setState(() {
+      //   isEmailVerified = currentUser.emailVerified;
+      //   // Use userData here as needed, or pass it to another function/state
+      // });
+      timer?.cancel();
+      if (userData?['sex'] == '') {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => ProfileAddPage()), // Redirect to ProfileAddPage
+          MaterialPageRoute(builder: (context) => HomeOrMatchPage()), // Redirect to ProfileAddPage
         );
-      } else {
-        timer?.cancel();
       }
     } else {
       setState(() {

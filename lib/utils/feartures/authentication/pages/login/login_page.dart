@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       });
   }
-
+  var _isObscure = true;
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size.height;
@@ -87,15 +87,20 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: TSizes.formHeight,),
                       TextFormField(
+                        obscureText: _isObscure,
                         controller: passwordController,
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.person_outline_outlined),
                           labelText: TTexts.password,
                           hintText: "Password",
                           suffixIcon: IconButton(
-                            onPressed: null,
-                            icon: Icon(Icons.remove_red_eye_sharp),
-                          )
+                            icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () {
+                              setState(() {
+                                _isObscure = !_isObscure;
+                              });
+                            },
+                          ),
                         ),
                       ),
                       Align(alignment: Alignment.centerRight ,child: TextButton(onPressed: (){

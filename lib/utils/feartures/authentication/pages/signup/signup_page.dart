@@ -46,6 +46,7 @@ class _SignUpPageState extends State<SignUpPage> {
               'done?': true,
               'review': 0,
               'followed': false,
+              'imageLink': '',
             });
             try {
               await FirebaseAuth.instance.currentUser!.sendEmailVerification();
@@ -85,6 +86,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
   
+  var _isObscure = true;
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size.height;
@@ -114,28 +116,38 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       const SizedBox(height: TSizes.formHeight,),
                       TextFormField(
+                        obscureText: _isObscure,
                         controller: passwordController,
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.key_outlined),
                           labelText: TTexts.password,
                           hintText: "Password",
                           suffixIcon: IconButton(
-                            onPressed: null,
-                            icon: Icon(Icons.remove_red_eye_sharp),
+                            icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () {
+                              setState(() {
+                                _isObscure = !_isObscure;
+                              });
+                            },
                           ),
                         ),
                       ),
                       const SizedBox(height: TSizes.formHeight,),
                       TextFormField(
+                        obscureText: _isObscure,
                         controller: confirmPasswordController,
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.key_outlined),
                           labelText: "Password(confirm)",
                           hintText: "Password (confirm)",
                           suffixIcon: IconButton(
-                            onPressed: null,
-                            icon: Icon(Icons.remove_red_eye_sharp),
-                          )
+                            icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                            onPressed: () {
+                              setState(() {
+                                _isObscure = !_isObscure;
+                              });
+                            },
+                          ),
                         ),
                       ),
                       SizedBox(height: 30,),
