@@ -4,6 +4,7 @@ import 'package:buddies_proto/utils/constants/image_strings.dart';
 import 'package:buddies_proto/utils/constants/sizes.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/home_or_match_page.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/profile/add_profile_screen.dart';
+import 'package:buddies_proto/utils/feartures/authentication/pages/signup/signup_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   bool canResendEmail = false;
   Timer? timer;
   String? sex;
+  
   @override
   void initState() {
     super.initState();
@@ -57,6 +59,49 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
             )
           );
         }
+      );
+    }
+  }
+
+  Future cancelUser() async {
+    try {
+      // Obtain the current user
+      final user = FirebaseAuth.instance.currentUser;
+      
+      if (user != null) {
+        // Assuming you're using the user's email as the document ID in your "Users" collection
+        final userEmail = user.email;
+        
+        if (userEmail != null) {
+          // Delete the user's data from Firestore
+          await FirebaseFirestore.instance.collection("Users").doc(userEmail).delete();
+        }
+
+        // Delete the user's account
+        await user.delete();
+
+        // Navigate back to the sign-in page or another appropriate page after deletion
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => SignUpPage(onTap: () {  },)), // Replace SignInPage with your actual sign-in page widget
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle any errors, such as the user not being able to delete their account
+      // This can happen for several reasons, e.g., the account has been recently created or signed in
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Error'),
+            content: Text('An error occurred: ${e.message}'),
+            actions: [
+              TextButton(
+                child: Text('OK'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        },
       );
     }
   }
@@ -116,18 +161,6 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                       onPressed: () {
                         canResendEmail ? sendVerificationEmail() : null;
                       },
-                    ),
-                    SizedBox(height: 8,),
-                    TextButton(
-                      style: ElevatedButton.styleFrom(
-                        minimumSize: Size.fromHeight(50),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(fontSize: 24),
-                      ),
-                      onPressed: () => FirebaseAuth.instance.signOut(),
-                      //ここでユーザー情報そのものも消せるようにしたい、データを溜め込みすぎると重くなってしまうんご
                     ),
                   ],
                 ),

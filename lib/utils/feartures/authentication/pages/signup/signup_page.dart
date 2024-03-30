@@ -37,15 +37,13 @@ class _SignUpPageState extends State<SignUpPage> {
               'bio': 'Empty bio...',
               'preference': '',
               'sex': '',
-              'matching ppl': [],
+              'matchings': [],
               'instagram': '',
               'facebook': '',
               'phone': '000-000-0000',
               'cur_matching': '',
-              'wait?': false,
-              'done?': true,
-              'review': 0,
-              'followed': false,
+              'wait': false,
+              'done': true,
               'imageLink': '',
             });
             try {
@@ -98,7 +96,7 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image(image: const AssetImage(TImages.onBoardingImage2), height: size * 0.2,),
+                Image(image: const AssetImage("assets/logos/BUDDIES.png"), height: size * 0.2,),
                 Text(TTexts.signupTitle, style: Theme.of(context).textTheme.headlineLarge,),
                 Text(TTexts.signUpSubTitle, style: Theme.of(context).textTheme.bodyLarge,),
                 Form(child: Container(

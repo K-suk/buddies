@@ -21,20 +21,12 @@ class ProfileUpdatePage extends StatefulWidget {
   @override
   State<ProfileUpdatePage> createState() => _ProfileUpdatePageState();
 }
-// Future<List<String>> getUserdatas() async{
-//     final User? currentUser = FirebaseAuth.instance.currentUser;
-//     CollectionReference ppl = FirebaseFirestore.instance.collection('Users');
-//     final user = await ppl.doc(currentUser!.email).get();
-//     final userdatas = <String>[user.get('username'), user.get('preference'), user.get('instagram'), user.get('facebook'), user.get('phone')];
-//     return userdatas;
-// }
 class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
-  Uint8List? image;
+  Uint8List? _image;
   @override
   Widget build(BuildContext context) {
     final User? currentUser = FirebaseAuth.instance.currentUser;
     final usersCollection = FirebaseFirestore.instance.collection("Users");
-    // final userdatas = getUserdatas();
     
     void showErrorMessage(String message) {
       showDialog(
@@ -53,14 +45,16 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
       );
     }
     Future<String> uploadImageToStorage(String childName, Uint8List file) async {
-      Reference ref = storage.ref().child(childName).child(getRandomString(15));
+      Reference ref = storage.ref().child(childName).child(currentUser!.email!);
       UploadTask uploadTask = ref.putData(file);
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();
       return downloadUrl;
     }
     Future<void> updateProfile(String username, String preference, String ig, String fb, String pn) async {
-      if (currentUser?.email == null) return;
+      if (currentUser == null || currentUser.email == null) {
+        return;
+      }
       if (preference.isEmpty) {
         showErrorMessage("Your Hobby can't be blank");
         return;
@@ -69,17 +63,25 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
         showErrorMessage("Your UserName can't be blank");
         return;
       }
-
-      String imageUrl = await uploadImageToStorage('profileImage', image!);
-      await usersCollection.doc(currentUser!.email).update({
-        'preference': preference,
-        'username': username,
-        'instagram': ig.isEmpty ? 'Empty...' : ig,
-        'facebook': fb.isEmpty ? 'Empty...' : fb,
-        'phone': pn.isEmpty ? 'Empty...' : pn,
-        'imageLink': imageUrl,
-      });
-
+      if (_image != null) {
+        String imageUrl = await uploadImageToStorage('profileImage', _image!);
+        await usersCollection.doc(currentUser!.email).update({
+          'preference': preference,
+          'username': username,
+          'instagram': ig.isEmpty ? 'Empty...' : ig,
+          'facebook': fb.isEmpty ? 'Empty...' : fb,
+          'phone': pn.isEmpty ? 'Empty...' : pn,
+          'imageLink': imageUrl,
+        });
+      } else {
+          await usersCollection.doc(currentUser!.email).update({
+            'preference': preference,
+            'username': username,
+            'instagram': ig.isEmpty ? 'Empty...' : ig,
+            'facebook': fb.isEmpty ? 'Empty...' : fb,
+            'phone': pn.isEmpty ? 'Empty...' : pn,
+          });
+      }
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => ProfilePage()),
         (Route<dynamic> route) => false,
@@ -87,23 +89,40 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
     }
 
     void selectImage() async {
-      Uint8List img = await pickImage(ImageSource.gallery);
+      Uint8List _img = await pickImage(ImageSource.gallery);
       setState(() {
-        image = img;
+        _image = _img;
       });
     }
 
+    final brightness = MediaQuery.of(context).platformBrightness;
+    bool isDarkMode = brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(),));
-              }, icon: const Icon(LineAwesomeIcons.angle_left)),
-          title: Text(
-            "Edit Profile",
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-      ),
+      appBar: 
+        isDarkMode ? 
+        AppBar(
+          iconTheme: IconThemeData(color: Colors.white),
+          leading: IconButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(),));
+                }, icon: const Icon(LineAwesomeIcons.angle_left)),
+            title: Text(
+              "Edit Profile",
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+        ) : 
+        AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
+          leading: IconButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ProfilePage(),));
+                }, icon: const Icon(LineAwesomeIcons.angle_left)),
+            title: Text(
+              "Edit Profile",
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+        ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance.collection("Users").doc(currentUser!.email).snapshots(),
         builder: (context, snapshot) {
@@ -124,13 +143,13 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                           },
                           child: Stack(
                             children: [
-                              if (image != null) 
+                              if (_image != null) 
                                 SizedBox(
                                   width: 120,
                                   height: 120,
                                   child: CircleAvatar(
                                     radius: 64,
-                                    backgroundImage: MemoryImage(image!),
+                                    backgroundImage: MemoryImage(_image!),
                                   ),
                                 )
                               else if (userData['imageLink'] != "")
@@ -151,7 +170,7 @@ class _ProfileUpdatePageState extends State<ProfileUpdatePage> {
                                   height: 120,
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(100),
-                                    child: Image.asset(TImages.google),
+                                    child: Image.asset("assets/logos/avator.png"),
                                   ),
                                 ),
                               Positioned(

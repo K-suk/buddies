@@ -51,7 +51,7 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
       );
     }
     Future<String> uploadImageToStorage(String childName, Uint8List file) async {
-      Reference ref = storage.ref().child(childName).child(getRandomString(15));
+      Reference ref = storage.ref().child(childName).child(currentUser!.email!);
       UploadTask uploadTask = ref.putData(file);
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();
@@ -73,15 +73,25 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
         showErrorMessage("Your Hobby can't be blank");
         return;
       }
-      String imageUrl = await uploadImageToStorage('profileImage', image!);
-      await usersCollection.doc(currentUser!.email).update({
-        'sex': sexEditingController,
-        'preference': preferenceEditingController.text,
-        'instagram': igEditingController.text.isEmpty ? 'Empty...' : igEditingController.text,
-        'facebook': fbEditingController.text.isEmpty ? 'Empty...' : fbEditingController.text,
-        'phone': pnEditingController.text.isEmpty ? 'Empty...' : pnEditingController.text,
-        'imageLink': imageUrl,
-      });
+      if (image != null) {
+        String imageUrl = await uploadImageToStorage('profileImage', image!);
+        await usersCollection.doc(currentUser!.email).update({
+          'sex': sexEditingController,
+          'preference': preferenceEditingController.text,
+          'instagram': igEditingController.text.isEmpty ? 'Empty...' : igEditingController.text,
+          'facebook': fbEditingController.text.isEmpty ? 'Empty...' : fbEditingController.text,
+          'phone': pnEditingController.text.isEmpty ? 'Empty...' : pnEditingController.text,
+          'imageLink': imageUrl,
+        });
+      } else {
+          await usersCollection.doc(currentUser!.email).update({
+            'sex': sexEditingController,
+            'preference': preferenceEditingController.text,
+            'instagram': igEditingController.text.isEmpty ? 'Empty...' : igEditingController.text,
+            'facebook': fbEditingController.text.isEmpty ? 'Empty...' : fbEditingController.text,
+            'phone': pnEditingController.text.isEmpty ? 'Empty...' : pnEditingController.text,
+          });
+      }
 
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const HomeOrMatchPage()),
@@ -122,7 +132,7 @@ class _ProfileAddPageState extends State<ProfileAddPage> {
                             height: 120,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(100),
-                              child: Image.asset(TImages.google),
+                              child: Image.asset("assets/logos/avator.png"),
                             ),
                           ),
                         Positioned(

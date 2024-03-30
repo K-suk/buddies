@@ -13,20 +13,20 @@ class OnBoardingController extends GetxController{
   final pages = [
     OnBoardingPageWidget(model: OnBoardingModel(
       image: TImages.onBoardingImage1,
-      title: TTexts.onBoardingTitle1,
-      subTitle: TTexts.onBoardingSubTitle1,
+      title: "Make new Buddy!",
+      subTitle: "If you are tired of current relationship, and wanna find new relationship, we got you!",
       bgColor: TColors.tOnBoardingPage1Color,
       color: TColors.black)),
     OnBoardingPageWidget(model: OnBoardingModel(
       image: TImages.onBoardingImage2,
-      title: TTexts.onBoardingTitle2,
-      subTitle: TTexts.onBoardingSubTitle2,
+      title: "Make your account!",
+      subTitle: "You have to create account with ubc student email, then verify your account via email!",
       bgColor: TColors.tOnBoardingPage2Color,
       color: TColors.black)),
     OnBoardingPageWidget(model: OnBoardingModel(
       image: TImages.onBoardingImage3,
-      title: TTexts.onBoardingTitle3,
-      subTitle: TTexts.onBoardingSubTitle3,
+      title: "Your buddy will be there!",
+      subTitle: "After signing up, change your profile, and wait for we find your new buddy.",
       bgColor: TColors.tOnBoardingPage3Color,
       color: TColors.black)),
     WelcomeScreen(),

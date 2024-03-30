@@ -24,7 +24,7 @@ class WelcomeScreen extends StatelessWidget {
           Column(
             children: [
               Text(
-                TTexts.welcomeTitle,
+                "Let's get started!",
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               Text(

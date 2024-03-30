@@ -30,8 +30,13 @@ class _ReportPageState extends State {
   ..loadRequest(Uri.parse('https://docs.google.com/forms/d/e/1FAIpQLSe239duXJWTAhH-0QRyGGBFULgxqDYoSxXvdPlW5tMtI6QVWA/viewform'));
   @override
   Widget build(BuildContext context) {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    bool isDarkMode = brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(title: const Text('Report Form')),
+      appBar: 
+      isDarkMode ? 
+      AppBar(title: const Text('Report Form'), iconTheme: IconThemeData(color: Colors.white)) :
+      AppBar(title: const Text('Report Form'), iconTheme: IconThemeData(color: Colors.black)),
       body: WebViewWidget(controller: controller),
     );
   }

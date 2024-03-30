@@ -1,3 +1,4 @@
+import 'package:buddies_proto/utils/constants/colors.dart';
 import 'package:buddies_proto/utils/feartures/authentication/models/model_on_boarding.dart';
 import 'package:flutter/material.dart';
 import 'package:buddies_proto/utils/constants/sizes.dart';
@@ -24,8 +25,8 @@ class OnBoardingPageWidget extends StatelessWidget {
           Image(image: AssetImage(model.image), height: size.height * 0.5,),
           Column(
             children: [
-              Text(model.title, style: Theme.of(context).textTheme.headlineMedium,),
-              Text(model.subTitle, textAlign: TextAlign.center,),
+              Text(model.title, style: TextStyle().copyWith(fontSize: 24.0, fontWeight: FontWeight.w600, color: TColors.dark),),
+              Text(model.subTitle, textAlign: TextAlign.center, style: TextStyle().copyWith(fontSize: 14.0, color: TColors.dark),),
             ],
           ),
           SizedBox(height: 50.0,)

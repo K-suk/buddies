@@ -5,7 +5,6 @@ import 'package:buddies_proto/utils/feartures/authentication/pages/profile/updat
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import 'package:buddies_proto/utils/constants/colors.dart';
 import 'package:buddies_proto/utils/constants/image_strings.dart';
@@ -19,8 +18,13 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    var isDarkMode = brightness == Brightness.dark;
     return Scaffold(
-        appBar: AppBar(
+        appBar: 
+        isDarkMode ? 
+        AppBar(
+          iconTheme: IconThemeData(color: Colors.white),
           leading: IconButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => HomeOrMatchPage(),));
@@ -29,9 +33,17 @@ class ProfilePage extends StatelessWidget {
             "Profile",
             style: Theme.of(context).textTheme.headlineMedium,
           ),
-          actions: [
-            IconButton(onPressed: () {}, icon: Icon(LineAwesomeIcons.moon))
-          ],
+        ) :
+        AppBar(
+          iconTheme: IconThemeData(color: Colors.black),
+          leading: IconButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HomeOrMatchPage(),));
+              }, icon: const Icon(LineAwesomeIcons.angle_left)),
+          title: Text(
+            "Profile",
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
         ),
         body: StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance.collection("Users").doc(currentUser.email!).snapshots(),
@@ -56,7 +68,7 @@ class ProfilePage extends StatelessWidget {
                                   errorBuilder: (BuildContext context, o, s) {
                                     return 
                                       Image(
-                                        image: AssetImage(TImages.google),
+                                        image: AssetImage("assets/logos/avator.png"),
                                       );
                                   },
                                 ),
@@ -68,7 +80,7 @@ class ProfilePage extends StatelessWidget {
                             child: ClipRRect(
                                 borderRadius: BorderRadius.circular(100),
                                 child: Image(
-                                  image: AssetImage(TImages.google),
+                                  image: AssetImage("assets/logos/avator.png"),
                                 )),
                           ),
                           Positioned(

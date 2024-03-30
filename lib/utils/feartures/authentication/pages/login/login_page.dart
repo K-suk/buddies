@@ -1,3 +1,4 @@
+import 'package:buddies_proto/utils/constants/colors.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/other_pages/home_or_match_page.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/forget_password/forget_password_mail/forget_password_mail.dart';
 import 'package:buddies_proto/utils/feartures/authentication/pages/signup/signup_page.dart';
@@ -69,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image(image: const AssetImage(TImages.onBoardingImage2), height: size * 0.3,),
+                Image(image: const AssetImage("assets/logos/BUDDIES.png"), height: size * 0.3,),
                 Text(TTexts.loginTitle, style: Theme.of(context).textTheme.headlineLarge,),
                 Text(TTexts.loginSubTitle, style: Theme.of(context).textTheme.bodyLarge,),
                 Form(child: Container(
@@ -82,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.person_outline_outlined),
                           labelText: TTexts.email,
-                          hintText: "Your UBC Student Email",
+                          hintText: "Email",
                         ),
                       ),
                       const SizedBox(height: TSizes.formHeight,),
@@ -128,13 +129,13 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.mail_outline_rounded, size: 60.0,),
+                                        const Icon(Icons.mail_outline, size: 60.0, color: Colors.black,),
                                         SizedBox(width: 10.0,),
                                         Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(TTexts.email, style: Theme.of(context).textTheme.titleLarge,),
-                                            Text("Reset via Email Verification.", style: Theme.of(context).textTheme.bodyMedium,)
+                                            Text(TTexts.email, style: TextStyle().copyWith(fontSize: 16.0, fontWeight: FontWeight.w600, color: TColors.dark),),
+                                            Text("Reset via Email Verification.", style: TextStyle().copyWith(fontSize: 14.0, fontWeight: FontWeight.normal, color: TColors.dark),)
                                           ],
                                         )
                                       ],

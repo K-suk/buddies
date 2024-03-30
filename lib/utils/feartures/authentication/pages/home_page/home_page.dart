@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:buddies_proto/components/drawer.dart';
 import 'package:buddies_proto/utils/constants/image_strings.dart';
 import 'package:buddies_proto/utils/constants/sizes.dart';
@@ -8,10 +10,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Timer? _timer;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> signUserOut(BuildContext context) async {
@@ -22,6 +31,12 @@ class HomePage extends StatelessWidget {
       (Route<dynamic> route) => false,
     );
   }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _timer = Timer.periodic(Duration(minutes: 5), (Timer t) => makeMatch());
+  // }
 
   void goToProfilePage(BuildContext context) {
     Navigator.push(
@@ -44,7 +59,7 @@ class HomePage extends StatelessWidget {
     await _firestore.collection(collectionName).doc(counterDoc['num'].toString()).update({
       'stack': FieldValue.arrayUnion([currentUser.email])
     });
-    await _firestore.collection('Users').doc(currentUser.email).update({'wait?': true});
+    await _firestore.collection('Users').doc(currentUser.email).update({'wait': true});
   }
 
   Future<void> makeMatch() async{
@@ -61,6 +76,9 @@ class HomePage extends StatelessWidget {
     int femaleLeng = femaleStack.length;
     final new_cnt = cur_cnt + 1;
     FirebaseFirestore.instance.collection('Male_match_stack').doc('Counter').update({
+      'num': new_cnt
+    });
+    FirebaseFirestore.instance.collection('Female_match_stack').doc('Counter').update({
       'num': new_cnt
     });
     if (maleLeng.isOdd){
@@ -87,15 +105,15 @@ class HomePage extends StatelessWidget {
       for (int i = 0; i<(maleLeng/2); i++){
         FirebaseFirestore.instance.collection('Users').doc(maleStack.elementAt(i)).update({
           'cur_matching': maleStack.elementAt(maleLeng-1-i),
-          'matching ppl': FieldValue.arrayUnion([maleStack.elementAt(maleLeng-1-i)]),
-          'wait?': false,
-          'done?': false
+          'matchings': FieldValue.arrayUnion([maleStack.elementAt(maleLeng-1-i)]),
+          'wait': false,
+          'done': false
         });
         FirebaseFirestore.instance.collection('Users').doc(maleStack.elementAt(maleLeng-1-i)).update({
           'cur_matching': maleStack.elementAt(i),
-          'matching ppl': FieldValue.arrayUnion([maleStack.elementAt(i)]),
-          'wait?': false,
-          'done?': false
+          'matchings': FieldValue.arrayUnion([maleStack.elementAt(i)]),
+          'wait': false,
+          'done': false
         });
       }
     }
@@ -103,20 +121,18 @@ class HomePage extends StatelessWidget {
       for (int i = 0; i<(femaleLeng/2); i++){
         FirebaseFirestore.instance.collection('Users').doc(femaleStack.elementAt(i)).update({
           'cur_matching': femaleStack.elementAt(femaleLeng-1-i),
-          'matching ppl': FieldValue.arrayUnion([femaleStack.elementAt(femaleLeng-1-i)]),
-          'wait?': false,
-          'done?': false
+          'matchings': FieldValue.arrayUnion([femaleStack.elementAt(femaleLeng-1-i)]),
+          'wait': false,
+          'done': false
         });
         FirebaseFirestore.instance.collection('Users').doc(femaleStack.elementAt(femaleLeng-1-i)).update({
           'cur_matching': femaleStack.elementAt(i),
-          'matching ppl': FieldValue.arrayUnion([femaleStack.elementAt(i)]),
-          'wait?': false,
-          'done?': false
+          'matchings': FieldValue.arrayUnion([femaleStack.elementAt(i)]),
+          'wait': false,
+          'done': false
         });
       }
     }
-    FirebaseFirestore.instance.collection('Male_match_stack').doc(cur_cnt.toString()).delete();
-    FirebaseFirestore.instance.collection('Female_match_stack').doc(cur_cnt.toString()).delete();
   }
 
   @override
@@ -127,9 +143,16 @@ class HomePage extends StatelessWidget {
         body: Center(child: Text("No user logged in")),
       );
     }
-
+    final brightness = MediaQuery.of(context).platformBrightness;
+    bool isDarkMode = brightness == Brightness.dark;
+    
     return Scaffold(
-      appBar: AppBar(),
+      appBar: 
+      isDarkMode ? AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
+      ) : AppBar(
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
       drawer: MyDrawer(
         onProfileTap: () => goToProfilePage(context),
         onSignOut: () => signUserOut(context),
@@ -171,7 +194,7 @@ class UserHomePageStreamBuilder extends StatelessWidget {
         }
 
         final userData = snapshot.data!.data() as Map<String, dynamic>;
-        final bool isWaiting = userData['wait?'] ?? false;
+        final bool isWaiting = userData['wait'] ?? false;
 
         return isWaiting 
           ? WaitingForMatchWidget(makeMatch: makeMatch)
@@ -188,18 +211,37 @@ class WaitingForMatchWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text("Please wait for your buddy to be found"),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: ElevatedButton(
-            onPressed: () => makeMatch(), // Implement makeMatch
-            child: const Text('Matching'),
+    var size = MediaQuery.of(context).size.height;
+    return SafeArea(
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(TSizes.defaultSpace),
+            child: Column(
+              children: [
+                Image(image: const AssetImage(TImages.onBoardingImage3), height: size * 0.5,),
+                Text("Please wait for your buddy to be found.", style: Theme.of(context).textTheme.headlineMedium,),
+                // Text("To find your buddy, please click the button below! You'll connect to your buddy soon!", textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyLarge,),
+                const SizedBox(height: TSizes.formHeight,),
+                const SizedBox(height: 24,),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size.fromHeight(50),
+                  ),
+                  icon: Icon(LineAwesomeIcons.beer, size: 32),
+                  label: Text(
+                    'Find new buddy',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  onPressed: () {
+                    makeMatch();
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        )
+      ),
     );
   }
 }
@@ -219,7 +261,7 @@ class ReadyToMatchWidget extends StatelessWidget {
             padding: const EdgeInsets.all(TSizes.defaultSpace),
             child: Column(
               children: [
-                Image(image: const AssetImage(TImages.onBoardingImage2), height: size * 0.5,),
+                Image(image: const AssetImage(TImages.onBoardingImage1), height: size * 0.5,),
                 Text("Let's find your buddies!", style: Theme.of(context).textTheme.headlineLarge,),
                 Text("To find your buddy, please click the button below! You'll connect to your buddy soon!", textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyLarge,),
                 const SizedBox(height: TSizes.formHeight,),
